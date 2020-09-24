@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <title>Sign Up</title>
+  </head>
+  <body>
+    <h1>User Registration</h1>
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <div class="card">
+
+
+                    <div class="card-body">
+                        <div class="card-title py-2">
+                    <h4>Register for a free account</h4>
+                        </div>
+
+                    <form method="post" id="userForm">
+                        {% csrf_token %}
+
+                        <div class="invalid-feedback invalid-feedback" style="display:none">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control form-control-sm" name="username" type="text" id="usernameField" placeholder="Type a User Name">
+                        </div>
+                        <div class="emailFeedback invalid-feedback" style="display:none">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control form-control-sm" name="email" type="email" id="emailField" placeholder="Email Address">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control form-control-sm" name="password" type="password" id="passwordField" placeholder="Password">
+                            <small class="float-right py-3">SHOW</small>
+                        </div>
+                        <input type="submit" class="btn btn-block btn-primary" value="register"/>
+                    </form>
+                    </div>
+            </div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script>
+        const username = document.getElementById('usernameField');
+        const my_email = document.getElementById('emailField');
+        username.addEventListener('keyup', getUserName);
+        my_email.addEventListener('keyup', getMyEmail);
+        const feedback = document.querySelector('.invalid-feedback');
+        const feedback1 = document.querySelector('.emailFeedback');
+
+
+<!--        check username -->
+        function getUserName(e){
+        e.preventDefault();
+            let name = username.value;
+<!--            alert(name);-->
+
+            username.classList.remove("is-invalid");
+            feedback.style.display = 'none';
+            if (name.length > 0) {
+
+                fetch('{% url 'validate_username' %}',{
+                body: JSON.stringify({username: name}),
+                method: "POST",
+                })
+                  .then((res) => res.json())
+                  .then((data)=>{
+
+                    console.log("data", data);
+                    if (data.username_error){
+
+                        username.classList.add("is-invalid");
+                        feedback.style.display = "block";
+                        feedback.innerHTML = `<p>${data.username_error}</p>`
+                    }
+                });
+            }
+        }
+
+<!--        check email-->
+        function getMyEmail(e){
+        e.preventDefault();
+            let email = my_email.value;
+<!--            alert(email);-->
+
+            my_email.classList.remove("is-invalid");
+            feedback1.style.display = 'none';
+
+            if (email.length > 0) {
+
+                fetch('{% url 'validate_email' %}',{
+                body: JSON.stringify({email: email}),
+                method: "POST",
+                })
+                  .then((res) => res.json())
+                  .then((data)=>{
+
+                    console.log("data", data);
+
+                    if (data.email_error){
+                        username.classList.add("is-invalid");
+                        feedback1.style.display = "block";
+                        feedback1.innerHTML = `<p>${data.email_error}</p>`
+                    }
+                });
+            }
+        }
+
+
+<!--        submit form-->
+        $(document).on("submit", "#userForm", function(e){
+            e.preventDefault();
+
+            $.ajax({
+                url:"/signup",
+                method:"POST",
+                data:{
+                    name: $("#usernameField").val(),
+                    email: $("#emailField").val(),
+                    password: $("#passwordField").val(),
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                },
+                success: function(){
+                    alert("Form Submitted");
+                }
+
+            });
+
+        });
+    </script>
+  </body>
+</html>

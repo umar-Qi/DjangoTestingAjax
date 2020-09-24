@@ -1,0 +1,207 @@
+{% extends 'basic.html' %}
+
+{% block title %}Title{% endblock title %}
+
+{% block crudactive %} active {% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+    <h1>Django Ajax CRUD</h1>
+    <div class="row">
+      <div class="col-md-4 ">
+        <h3>ADD THING</h3>
+        <form id="addThing" action="">
+          <div class="form-group">
+            <input class="form-control" type="text" name="name" placeholder="Product Name" required>
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="text" name="category" placeholder="Category" required>
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="number" name="price" min="10" max="100" placeholder="Price" required>
+          </div>
+          <button class="btn btn-primary form-control" type="submit">SUBMIT</button>
+        </form>
+      </div>
+      <div class="col-md-8">
+        <h3>THINGS</h3>
+        <table id="thingTable" class="table table-striped">
+          <tr>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th colspan="3">Price</th>
+          </tr>
+          {% if things %}
+          {% for thing in things %}
+          <tr id="thing-{{thing.id}}">
+              <td class="thingName thingData" name="name">{{thing.productname}}</td>
+              <td class="thingCategory thingData" name="category">{{thing.category}}</td>
+              <td class="thingPrice thingData" name="price">{{thing.price}}</td>
+              <td align="center">
+                  <button class="btn btn-success form-control" onClick="editThing({{thing.id}})" data-toggle="modal" data-target="#myModal")">EDIT</button>
+              </td>
+              <td align="center">
+                  <button class="btn btn-danger form-control" onClick="deleteThing({{thing.id}})">DELETE</button>
+              </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+            No things
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <h4 class="modal-title" id="myModalLabel">Update User</h4>
+        </div>
+        <form id="updateThing" action="">
+        <div class="modal-body">
+            <input class="form-control" id="form-id" type="hidden" name="formId"/>
+            <label for="name">Product Name</label>
+            <input class="form-control" id="form-name" type="text" name="formName"/>
+            <label for="category">Category</label>
+            <input class="form-control" id="form-category" type="text" name="formCategory"/>
+            <label for="price">Price</label>
+            <input class="form-control" id="form-price" type="number" name="formPrice" min=10 max=100/>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" >Save changes</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Create Django Ajax Call
+$("form#addThing").submit(function() {
+    var nameInput = $('input[name="name"]').val().trim();
+    var categoryInput = $('input[name="category"]').val().trim();
+    var priceInput = $('input[name="price"]').val().trim();
+    if (nameInput && categoryInput && priceInput) {
+        // Create Ajax Call
+        $.ajax({
+            url: '{% url "crud_ajax_create" %}',
+            data: {
+                'name': nameInput,
+                'category': categoryInput,
+                'price': priceInput
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.thing) {
+                  appendToUsrTable(data.thing);
+                }
+            }
+        });
+      } else {
+        alert("All fields must have a valid value.");
+    }
+    $('form#addThing').trigger("reset");
+    return false;
+});
+function appendToUsrTable(thing) {
+  $("#thingTable > tbody:last-child").append(`
+        <tr id="user-${thing.id}">
+            <td class="thingName" name="name">${thing.name}</td>
+            '<td class="thingCategory" name="category">${thing.category}</td>
+            '<td class="thingPrice" name="price">${thing.price}</td>
+            '<td align="center">
+                <button class="btn btn-success form-control" onClick="editThing(${thing.id})" data-toggle="modal" data-target="#myModal")">EDIT</button>
+            </td>
+            <td align="center">
+                <button class="btn btn-danger form-control" onClick="deleteThing(${thing.id})">DELETE</button>
+            </td>
+        </tr>
+    `);
+}
+
+// Create Django Ajax Call
+$("form#updateThing").submit(function() {
+    var idInput = $('input[name="formId"]').val().trim();
+    var nameInput = $('input[name="formName"]').val().trim();
+    var categoryInput = $('input[name="formCategory"]').val().trim();
+    var priceInput = $('input[name="formPrice"]').val().trim();
+    if (nameInput && categoryInput && priceInput) {
+        // Create Ajax Call
+        $.ajax({
+            url: '{% url "crud_ajax_update" %}',
+            data: {
+                'id': idInput,
+                'name': nameInput,
+                'category': categoryInput,
+                'price': priceInput
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.thing) {
+                  updateToUserTable(data.thing);
+                }
+            }
+        });
+       } else {
+        alert("All fields must have a valid value.");
+    }
+    $('form#updateThing').trigger("reset");
+    $('#myModal').modal('hide');
+    return false;
+});
+
+// Update Django Ajax Call
+function editThing(id) {
+  if (id) {
+    tr_id = "#thing-" + id;
+    name = $(tr_id).find(".thingName").text();
+    category = $(tr_id).find(".thingCategory").text();
+    price = $(tr_id).find(".thingPrice").text();
+    $('#form-id').val(id);
+    $('#form-name').val(name);
+    $('#form-category').val(category);
+    $('#form-price').val(price);
+  }
+}
+function updateToUserTable(thing){
+    $("#thingTable #thing-" + thing.id).children(".thingData").each(function() {
+        var attr = $(this).attr("name");
+        if (attr == "name") {
+          $(this).text(thing.name);
+        } else if (attr == "category") {
+          $(this).text(thing.category);
+        } else {
+          $(this).text(thing.price);
+        }
+      });
+}
+
+// Delete Django Ajax Call
+function deleteThing(id) {
+  var action = confirm("Are you sure you want to delete this user?");
+  if (action != false) {
+    $.ajax({
+        url: '{% url "crud_ajax_delete" %}',
+        data: {
+            'id': id,
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.deleted) {
+              $("#thingTable #thing-" + id).remove();
+            }
+        }
+    });
+  }
+}
+</script>
+{% endblock javascript %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %} Employee {% endblock %}
+{% block employeeactive %} active {% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <table class="table table-striped table-sm" id="my_employee">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>d_o_j</th>
+                <th>Designation</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in emp %}
+        <tr>
+            <td>{{e.name}}</td>
+            <td>{{e.email}}</td>
+            <td>{{e.d_o_j | date:"Y-m-d"}}</td>
+            <td>{{e.designation}}</td>
+            <td>{{e.department}}</td>
+            <td>{{e.salary}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

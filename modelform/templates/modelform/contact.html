@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %} Contact {% endblock %}
+
+{% block contactactive %} active {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>Contact Form</h1>
+    <form method="POST" id="form">
+        {% csrf_token %}
+            <div class="form-group">
+                <small id="result"></small>
+            </div>
+        {% for field in myForm %}
+            <div class="form-group col-6">
+                <label class="col-12">{{field.label}}</label>
+                {{field}}
+            </div>
+            {% endfor %}
+        <button type="submit" class="btn btn-primary" id="bttn">Submit</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+    const form = document.getElementById('form');
+    const name = document.getElementById('id_name');
+    form.addEventListener("submit",submitHandler);
+    name.addEventListener('keyup', getEventType);
+
+    function submitHandler(e){
+        e.preventDefault();
+
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'contact' %}',
+        data: $("#form").serialize(),
+        dataType: 'json',
+        success: function (data){
+
+            if (data.msg == 'Success'){
+                form.reset();
+                alert('Form is Submitted');
+            }
+        },
+    })
+    }
+
+    function getEventType(e){
+        e.preventDefault();
+
+<!--        let un = $("#id_name").val;-->
+        let un = name.value;
+
+        $.ajax({
+            type: 'GET',
+            url: '{% url 'check_name' %}',
+            data:{username: un},
+            success: function(data){
+                if (data['msg'] == 'Exists'){
+                    $("#result").html("This username already exists").addClass("text-danger");
+                    $("#bttn").attr("disabled","disabled");
+                }else{
+                    $("#result").html("");
+                    }
+            },
+        })
+
+    }
+
+</script>
+
+{% endblock %}

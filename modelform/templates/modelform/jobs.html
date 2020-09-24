@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %} Jobs {% endblock %}
+
+{% block jobactive %} active {% endblock %}
+
+{% block body %}
+<style type="text/css">
+    h1 {
+        margin-top:10px;
+        }
+    .input-group {
+        margin-bottom: 10px;
+        }
+</style>
+<div class="container">
+<h1>Jobs</h1>
+</div>
+<div class="container">
+<div class="input-group">
+    <select onchange="job_type(this.value)">
+        <option value="" selected disabled>Type</option>
+        <option value="office">Office</option>
+        <option value="remote">Remote</option>
+    </select>
+    <select onchange="sort_jobs(this.value)">
+        <option value="" selected disabled>Date</option>
+        <option value="descending">Oldest</option>
+        <option value="ascending">Latest</option>
+    </select>
+
+<input type="text" id="location" size="50" placeholder="location">
+<button class="btn btn-outline-primary" onclick="find_location();">Search</button>
+</div>
+</div>
+
+<div class="container">
+    <table id="myTable" class="table">
+        <thead class="thead-dark">
+            <tr>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Posted On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in list %}
+            <tr>
+                <td>{{l.job_type}}</td>
+                <td>{{l.location}}</td>
+                <td>{{l.posted_on}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    function job_type(job_type){
+    document.getElementById("location").value = '';
+    let param = 'job_type=' + job_type;
+    send_request(param);
+}
+
+function sort_jobs(sort_type){
+    document.getElementById("location").value = '';
+    let param = 'sort_jobs=' + sort_type;
+    send_request(param);
+}
+
+function find_location(){
+    let location = document.getElementById("location").value;
+    let param = 'location=' + location;
+    send_request(param);
+}
+
+function send_request(param){
+    $.ajax({
+        method:'GET',
+        url: 'api/get_jobs?' + param,
+        beforeSend: function(){
+            console.log('before send');
+        },
+        success: function(result){
+            update_table(result);
+            console.log('after send');
+        },
+        error: function(){
+            console.log('error');
+        }
+
+    })
+}
+
+function update_table(data){
+    let row;
+    let all_rows = '';
+    Object.keys(data).forEach(key=>{
+    elem = data[key];
+    row = '<tr><td>' + elem['job_type'] + '</td>' + '<td>' + elem['location'] + '</td>' + '<td>' + elem['posted_on'] + '</td>' + '<tr>';
+    all_rows = all_rows + row;
+    });
+    $("#myTable tbody").html(all_rows);
+}
+</script>
+
+{% endblock %}
