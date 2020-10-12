@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
   <head>
+      {% load socialaccount %}
+      {% providers_media_js %}
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -41,6 +43,8 @@
                             <small class="float-right py-3">SHOW</small>
                         </div>
                         <input type="submit" class="btn btn-block btn-primary" value="register"/>
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-block btn-primary" role="button">SignUp with google</a>
+                        <a href="{% provider_login_url 'facebook' method='oauth2' %}" class="btn btn-block btn-primary" role="button">SignUp with facebook</a>
                     </form>
                     </div>
             </div>
@@ -134,6 +138,7 @@
                 },
                 success: function(){
                     alert("Form Submitted");
+                    $("#userForm").trigger("reset");
                 }
 
             });

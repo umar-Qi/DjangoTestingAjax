@@ -11,6 +11,8 @@ import json
 from django.contrib.auth.models import User
 from django.views.generic import View, TemplateView, ListView
 from validate_email import validate_email
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class UsernameValidationView(View):
@@ -43,6 +45,13 @@ class RegistrationView(TemplateView):
         name = request.POST['name']
         email = request.POST['email']
         password = request.POST['password']
+        send_mail(
+            name,
+            password,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
 
         User.objects.create(
             username=name,

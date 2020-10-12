@@ -3,6 +3,7 @@ from .views import RegistrationView, UsernameValidationView, EmailValidationView
 from django.views.decorators.csrf import csrf_exempt
 from . import views
 
+
 urlpatterns = [
     path('', views.home, name="home"),
     path('employee', views.employee, name="employee"),
